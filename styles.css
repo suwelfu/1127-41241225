@@ -1,0 +1,139 @@
+/* 整體背景 */
+body {
+    background: linear-gradient(to right, #5a4dfe, #00bcd4);
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* 使頁面佈局居中 */
+.container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 卡片容器樣式 */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 400px;
+    width: 100%;
+    background: #fff;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* 表單標題 */
+h3, h4 {
+    font-size: 1.5rem;
+    color: #4e4e4e;
+}
+
+/* 按鈕樣式 */
+.btn {
+    background-color: #00bcd4;
+    color: white;
+    font-weight: bold;
+    border-radius: 30px;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #5a4dfe;
+}
+
+/* 用於登出按鈕的樣式 */
+.btn-secondary {
+    background-color: #f44336;
+    border-radius: 30px;
+}
+
+.btn-secondary:hover {
+    background-color: #d32f2f;
+}
+
+/* 表單輸入框 */
+.form-control {
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.form-control:focus {
+    border-color: #00bcd4;
+    box-shadow: 0 0 5px rgba(0, 188, 212, 0.6);
+}
+
+/* 會員資料區塊 */
+#memberSection {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 500px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+#memberInfo {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+/* 筆記區塊 */
+#notesList {
+    margin-top: 20px;
+}
+
+.list-group-item {
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+}
+
+.list-group-item:hover {
+    background-color: #efefef;
+}
+
+/* 文字區域 */
+.form-label {
+    font-weight: 600;
+    color: #444;
+}
+
+/* 表單區塊 */
+form {
+    margin-bottom: 20px;
+}
+
+/* 輸入框與文本框 */
+textarea.form-control {
+    height: 120px;
+}
+
+/* 圖標與提示 */
+.alert {
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+}
+
+/* 動畫效果 */
+.fadeIn {
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

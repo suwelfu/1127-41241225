@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>會員系統與筆記功能</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css"> <!-- 引入外部 CSS -->
+    <link rel="script" href="scripts.js"> <!-- 引入外部 js -->
+
+
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyDt6s-jeWTE9zSAGo650qD60_qJJ9vLoYA",
+            authDomain: "ricky50204-5cd1d.firebaseapp.com",
+            projectId: "ricky50204-5cd1d",
+            storageBucket: "ricky50204-5cd1d.firebasestorage.app",
+            messagingSenderId: "149513385579",
+            appId: "1:149513385579:web:ed93ccc6611a7b7bc7e32e",
+            measurementId: "G-VS70EMRKEJ"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // 元素選取
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const memberSection = document.getElementById('memberSection');
+        const memberInfo = document.getElementById('memberInfo');
+        const notesList = document.getElementById('notesList');
+
+        // 顯示會員資料
+        function displayMemberInfo(user) {
+            memberSection.classList.remove('d-none');
+            loginForm.classList.add('d-none');
+            registerForm.classList.add('d-none');
+            memberInfo.innerHTML = `
+                <p><strong>名稱：</strong> ${user.displayName || '未提供'}</p>
+                <p><strong>Email：</strong> ${user.email}</p>
+            `;
+            loadNotes(user.uid);
+        }
+
+        // 登出功能
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                alert('您已成功登出！');
+                window.location.reload();
+            } catch (error) {
+                alert(`錯誤：${error.message}`);
+            }
+        });
+
+        // 監聽登入狀態
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                displayMemberInfo(user);
+            }
+        });
+
+        // 處理新增筆記
+        document.getElementById('addNoteForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const noteContent = document.getElementById('noteContent').value;
+
+            if (noteContent.trim() === '') {
+                alert('筆記內容不能為空');
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                await addDoc(collection(db, 'notes'), {
+                    uid: user.uid,
+                    content: noteContent,
+                    createdAt: new Date()
+                });
+                alert('筆記新增成功！');
+                document.getElementById('noteContent').value = '';
+                loadNotes(user.uid);
+            } catch (error) {
+                alert(`錯誤：${error.message}`);
+            }
+        });
+
+        // 載入用戶筆記
+        async function loadNotes(uid) {
+            notesList.innerHTML = '<p>載入中...</p>';
+            const notesQuery = query(collection(db, 'notes'), where('uid', '==', uid));
+
+            try {
+                const querySnapshot = await getDocs(notesQuery);
+                notesList.innerHTML = '';
+                if (querySnapshot.empty) {
+                    notesList.innerHTML = '<p>尚無筆記。</p>';
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        const note = doc.data();
+                        const noteItem = document.createElement('li');
+                        noteItem.classList.add('list-group-item');
+                        noteItem.textContent = note.content;
+                        notesList.appendChild(noteItem);
+                    });
+                }
+            } catch (error) {
+                alert(`無法載入筆記：${error.message}`);
+            }
+        }
+
+        // 處理登入
+        loginForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                displayMemberInfo(user);
+            } catch (error) {
+                alert(`錯誤：${error.message}`);
+            }
+        });
+
+        // 處理註冊
+        registerForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                displayMemberInfo(user);
+            } catch (error) {
+                alert(`錯誤：${error.message}`);
+            }
+        });
+
+        // 處理 Google 登入
+        document.getElementById('googleLogin').addEventListener('click', async function () {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+                displayMemberInfo(user);
+            } catch (error) {
+                alert(`錯誤：${error.message}`);
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <!-- 登入表單 -->
+        <div id="loginForm" class="card p-4 shadow-lg">
+            <h3 class="text-center mb-4">登入</h3>
+            <form>
+                <div class="mb-3">
+                    <label for="loginEmail" class="form-label">電子郵件</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="請輸入您的電子郵件" required>
+                </div>
+                <div class="mb-3">
+                    <label for="loginPassword" class="form-label">密碼</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="請輸入您的密碼" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">登入</button>
+                <button type="button" id="googleLogin" class="btn btn-danger w-100 mt-2">使用 Google 登入</button>
+            </form>
+        </div>
+
+        <!-- 註冊表單 -->
+        <div id="registerForm" class="card p-4 shadow-lg d-none">
+            <h3 class="text-center mb-4">註冊</h3>
+            <form>
+                <div class="mb-3">
+                    <label for="registerEmail" class="form-label">電子郵件</label>
+                    <input type="email" id="registerEmail" class="form-control" placeholder="請輸入您的電子郵件" required>
+                </div>
+                <div class="mb-3">
+                    <label for="registerPassword" class="form-label">密碼</label>
+                    <input type="password" id="registerPassword" class="form-control" placeholder="請輸入您的密碼" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">註冊</button>
+            </form>
+        </div>
+
+        <!-- 會員資料區塊 -->
+        <div id="memberSection" class="card p-4 shadow-lg d-none">
+            <h3 class="text-center mb-4">會員資料</h3>
+            <div id="memberInfo"></div>
+            <hr>
+            <h4 class="mt-4">新增筆記</h4>
+            <form id="addNoteForm">
+                <div class="mb-3">
+                    <textarea id="noteContent" class="form-control" placeholder="輸入您的筆記..." rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">新增筆記</button>
+            </form>
+            <hr>
+            <h4 class="mt-4">我的筆記</h4>
+            <ul id="notesList" class="list-group"></ul>
+            <button id="logoutButton" class="btn btn-secondary w-100 mt-3">登出</button>
+        </div>
+    </div>
+</body>
+</html>
